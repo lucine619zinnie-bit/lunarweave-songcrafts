@@ -1,0 +1,43 @@
+
+name: Build LUNARWEAVE SONGCRAFTS APK
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'LUNARWEAVE-SONGCRAFTS-Android-Project.zip'
+      - '.github/workflows/build-apk.yml'
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Extract Android project
+        run: |
+          unzip -q LUNARWEAVE-SONGCRAFTS-Android-Project.zip
+          test -f lunarweave-songcrafts/app/build.gradle
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle 8.9
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Build debug APK
+        run: gradle -p lunarweave-songcrafts assembleDebug
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Lunarweave-Songcrafts-debug-apk
+          path: lunarweave-songcrafts/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
